@@ -1,6 +1,7 @@
-import os
-import requests
 from typing import Dict, Any
+import os
+
+import requests
 
 from src.services.nlp_service import summarize_text
 

@@ -1,7 +1,7 @@
-import datetime
-from typing import Dict
-import secrets
 import hashlib
+import secrets
+from typing import Dict
+import datetime
 
 from src.db import SessionLocal
 from src.models import UserToken
@@ -28,7 +28,7 @@ def verify_password(password: str, hashed: str) -> bool:
         salt, pwd_hash = hashed.split('$')
         computed_hash = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 100000)
         return computed_hash.hex() == pwd_hash
-    except:
+    except (AttributeError, TypeError, ValueError):
         return False
 
 

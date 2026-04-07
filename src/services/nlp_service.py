@@ -1,5 +1,6 @@
 import os
 from langdetect import detect
+from langdetect.lang_detect_exception import LangDetectException
 
 try:
     from transformers import pipeline
@@ -16,7 +17,7 @@ def summarize_text(text: str, model: str = None):
 
     try:
         language = detect(text)
-    except:
+    except LangDetectException:
         language = "en"
 
     summarizer = pipeline("summarization", model=model)
@@ -34,7 +35,7 @@ def suggest_replies(text: str, model: str = None):
 
     try:
         language = detect(text)
-    except:
+    except LangDetectException:
         language = "en"
 
     generator = pipeline("text2text-generation", model=model)
