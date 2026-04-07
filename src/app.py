@@ -28,9 +28,11 @@ def setup():
 with app.app_context():
     setup()
 
-@app.route('/favicon.ico')
+
+@app.route("/favicon.ico")
 def favicon():
-    return '', 204
+    return "", 204
+
 
 @app.route("/")
 def home():
@@ -43,9 +45,11 @@ def home():
         return render_template("dashboard.html", user_email=session.get("user_email"))
     return render_template("login.html")
 
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
+
 
 @app.route("/voice/transcribe", methods=["POST"])
 def voice_transcribe():
@@ -56,9 +60,11 @@ def voice_transcribe():
     transcription = transcribe_audio(file)
     return jsonify(transcription)
 
+
 @app.route("/voice/speak", methods=["POST"])
 def voice_speak():
     from flask import send_file
+
     payload = request.get_json(force=True)
     text = payload.get("text")
     lang = payload.get("lang", "en")
@@ -67,9 +73,14 @@ def voice_speak():
     audio_path = speak_text(text, lang)
     return send_file(audio_path, as_attachment=True, download_name="speech.mp3")
 
+
 @app.route("/email/send", methods=["POST"])
 def api_send_email():
-    gmail_enabled = os.getenv("GMAIL_API_ENABLED", "false").lower() in ["1", "true", "yes"]
+    gmail_enabled = os.getenv("GMAIL_API_ENABLED", "false").lower() in [
+        "1",
+        "true",
+        "yes",
+    ]
     if gmail_enabled and not session.get("user_id"):
         return jsonify({"error": "authentication required"}), 401
 
@@ -86,16 +97,22 @@ def api_send_email():
 
 @app.route("/email/status", methods=["GET"])
 def api_email_status():
-    return jsonify({
-        "status": "ok",
-        "email_api": os.getenv("GMAIL_API_ENABLED", "false"),
-        "authenticated": bool(session.get("user_id")),
-    })
+    return jsonify(
+        {
+            "status": "ok",
+            "email_api": os.getenv("GMAIL_API_ENABLED", "false"),
+            "authenticated": bool(session.get("user_id")),
+        }
+    )
 
 
 @app.route("/email/list", methods=["GET"])
 def api_email_list():
-    gmail_enabled = os.getenv("GMAIL_API_ENABLED", "false").lower() in ["1", "true", "yes"]
+    gmail_enabled = os.getenv("GMAIL_API_ENABLED", "false").lower() in [
+        "1",
+        "true",
+        "yes",
+    ]
     if gmail_enabled and not session.get("user_id"):
         return jsonify({"error": "authentication required"}), 401
 
@@ -105,7 +122,11 @@ def api_email_list():
 
 @app.route("/email/read/<message_id>", methods=["GET"])
 def api_email_read(message_id):
-    gmail_enabled = os.getenv("GMAIL_API_ENABLED", "false").lower() in ["1", "true", "yes"]
+    gmail_enabled = os.getenv("GMAIL_API_ENABLED", "false").lower() in [
+        "1",
+        "true",
+        "yes",
+    ]
     if gmail_enabled and not session.get("user_id"):
         return jsonify({"error": "authentication required"}), 401
 
@@ -151,6 +172,7 @@ def api_send_telegram():
 
     result = send_telegram_message(chat_id, text)
     return jsonify(result)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -5,7 +5,6 @@ import requests
 
 from src.services.nlp_service import summarize_text
 
-
 TELEGRAM_API_URL = "https://api.telegram.org"
 
 
@@ -16,7 +15,9 @@ def _bot_token():
     return token
 
 
-def send_message(chat_id: str, text: str, reply_markup: Dict[str, Any] = None) -> Dict[str, Any]:
+def send_message(
+    chat_id: str, text: str, reply_markup: Dict[str, Any] = None
+) -> Dict[str, Any]:
     token = _bot_token()
     url = f"{TELEGRAM_API_URL}/bot{token}/sendMessage"
     payload = {"chat_id": chat_id, "text": text, "parse_mode": "Markdown"}
@@ -62,9 +63,7 @@ def handle_command(chat_id: str, text: str) -> str:
     if normalized.startswith("/echo"):
         payload = text.partition(" ")[2].strip()
         return payload or "Send /echo followed by text to echo it back."
-    return (
-        "I didn't understand that command. Use /help to see available commands."
-    )
+    return "I didn't understand that command. Use /help to see available commands."
 
 
 def handle_update(update: Dict[str, Any]) -> Dict[str, Any]:

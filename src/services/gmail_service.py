@@ -67,14 +67,18 @@ def _load_client_config():
         return client_config["web"]
     if "installed" in client_config:
         return client_config["installed"]
-    raise RuntimeError("Google OAuth credentials file must contain a 'web' or 'installed' entry.")
+    raise RuntimeError(
+        "Google OAuth credentials file must contain a 'web' or 'installed' entry."
+    )
 
 
 def validate_redirect_uri(redirect_uri: str):
     config = _load_client_config()
     allowed_redirect_uris = config.get("redirect_uris", [])
     if redirect_uri not in allowed_redirect_uris:
-        raise RuntimeError("Configured redirect URI does not match Google OAuth client settings.")
+        raise RuntimeError(
+            "Configured redirect URI does not match Google OAuth client settings."
+        )
     return redirect_uri
 
 
@@ -99,8 +103,14 @@ def _ensure_valid_credentials(user_token, user_id, register_token_fn):
     creds = _build_credentials_from_token(user_token)
     if creds.expired and creds.refresh_token:
         creds.refresh(Request())
-        expires_in = int((creds.expiry - datetime.utcnow()).total_seconds()) if creds.expiry else None
-        register_token_fn(user_id, "gmail", creds.token, creds.refresh_token, expires_in)
+        expires_in = (
+            int((creds.expiry - datetime.utcnow()).total_seconds())
+            if creds.expiry
+            else None
+        )
+        register_token_fn(
+            user_id, "gmail", creds.token, creds.refresh_token, expires_in
+        )
     return creds
 
 
@@ -118,22 +128,36 @@ def _create_message(sender: str, to: str, subject: str, body: str):
     return {"raw": raw}
 
 
-def send_email_real(to: str, subject: str, body: str, user_token, user_id, register_token_fn):
+def send_email_real(
+    to: str, subject: str, body: str, user_token, user_id, register_token_fn
+):
     gmail_service, _ = build_gmail_service(user_token, user_id, register_token_fn)
     message_body = _create_message("me", to, subject, body)
-    sent = gmail_service.users().messages().send(userId="me", body=message_body).execute()
+    sent = (
+        gmail_service.users().messages().send(userId="me", body=message_body).execute()
+    )
     return {"status": "sent", "message_id": sent.get("id"), "gmail_response": sent}
 
 
 def fetch_message_ids(user_token, user_id, register_token_fn, max_results: int = 10):
     gmail_service, _ = build_gmail_service(user_token, user_id, register_token_fn)
-    results = gmail_service.users().messages().list(userId="me", maxResults=max_results).execute()
+    results = (
+        gmail_service.users()
+        .messages()
+        .list(userId="me", maxResults=max_results)
+        .execute()
+    )
     return results.get("messages", [])
 
 
 def fetch_message(user_token, user_id, register_token_fn, message_id: str):
     gmail_service, _ = build_gmail_service(user_token, user_id, register_token_fn)
-    message = gmail_service.users().messages().get(userId="me", id=message_id, format="full").execute()
+    message = (
+        gmail_service.users()
+        .messages()
+        .get(userId="me", id=message_id, format="full")
+        .execute()
+    )
     payload = message.get("payload", {})
     headers = payload.get("headers", [])
     snippet = message.get("snippet")
@@ -141,13 +165,19 @@ def fetch_message(user_token, user_id, register_token_fn, message_id: str):
     body = ""
     if parts:
         for part in parts:
-            if part.get("mimeType") == "text/plain" and part.get("body", {}).get("data"):
-                body = base64.urlsafe_b64decode(part["body"]["data"].encode()).decode("utf-8", errors="ignore")
+            if part.get("mimeType") == "text/plain" and part.get("body", {}).get(
+                "data"
+            ):
+                body = base64.urlsafe_b64decode(part["body"]["data"].encode()).decode(
+                    "utf-8", errors="ignore"
+                )
                 break
     return {
         "id": message.get("id"),
         "snippet": snippet,
-        "subject": next((h.get("value") for h in headers if h.get("name") == "Subject"), ""),
+        "subject": next(
+            (h.get("value") for h in headers if h.get("name") == "Subject"), ""
+        ),
         "from": next((h.get("value") for h in headers if h.get("name") == "From"), ""),
         "body": body,
     }
@@ -155,6 +185,8 @@ def fetch_message(user_token, user_id, register_token_fn, message_id: str):
 
 def get_user_email_from_token(creds):
     url = "https://openidconnect.googleapis.com/v1/userinfo"
-    response = requests.get(url, headers={"Authorization": f"Bearer {creds.token}"}, timeout=10)
+    response = requests.get(
+        url, headers={"Authorization": f"Bearer {creds.token}"}, timeout=10
+    )
     response.raise_for_status()
     return response.json().get("email")

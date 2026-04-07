@@ -21,7 +21,10 @@ def send_email(to: str, subject: str, body: str, user_id: int = None) -> Dict[st
 
     token = get_token(user_id, "gmail")
     if not token:
-        return {"status": "error", "message": "No Gmail credentials available for the signed-in user."}
+        return {
+            "status": "error",
+            "message": "No Gmail credentials available for the signed-in user.",
+        }
 
     return send_email_real(to, subject, body, token, user_id, register_token)
 
@@ -35,7 +38,10 @@ def list_emails(user_id: int):
 
     token = get_token(user_id, "gmail")
     if not token:
-        return {"status": "error", "message": "No Gmail credentials available for the signed-in user."}
+        return {
+            "status": "error",
+            "message": "No Gmail credentials available for the signed-in user.",
+        }
 
     messages = fetch_message_ids(token, user_id, register_token)
     return {"status": "ok", "messages": messages}
@@ -43,14 +49,21 @@ def list_emails(user_id: int):
 
 def read_email(user_id: int, message_id: str):
     if os.getenv("GMAIL_API_ENABLED", "false").lower() not in ["1", "true", "yes"]:
-        return {"status": "stub", "message_id": message_id, "body": "This is a placeholder."}
+        return {
+            "status": "stub",
+            "message_id": message_id,
+            "body": "This is a placeholder.",
+        }
 
     if not user_id:
         return {"status": "error", "message": "Authentication required."}
 
     token = get_token(user_id, "gmail")
     if not token:
-        return {"status": "error", "message": "No Gmail credentials available for the signed-in user."}
+        return {
+            "status": "error",
+            "message": "No Gmail credentials available for the signed-in user.",
+        }
 
     email = fetch_message(token, user_id, register_token, message_id)
     return {"status": "ok", "message": email}

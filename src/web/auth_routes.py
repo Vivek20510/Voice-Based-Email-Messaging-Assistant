@@ -1,6 +1,14 @@
 import os
 import datetime
-from flask import Blueprint, redirect, request, session, url_for, render_template, jsonify
+from flask import (
+    Blueprint,
+    redirect,
+    request,
+    session,
+    url_for,
+    render_template,
+    jsonify,
+)
 import requests
 
 from src.db import SessionLocal
@@ -27,20 +35,24 @@ def get_db():
 def auth_login():
     if request.method == "GET":
         return render_template("login.html")
-    
+
     # POST: Email/password login
     email = request.form.get("email", "").strip()
     password = request.form.get("password", "").strip()
-    
+
     if not email or not password:
         return render_template("login.html", error="Email and password required"), 400
-    
+
     db = next(get_db())
     user = db.query(User).filter(User.email == email).first()
-    
-    if not user or not user.hashed_password or not verify_password(password, user.hashed_password):
+
+    if (
+        not user
+        or not user.hashed_password
+        or not verify_password(password, user.hashed_password)
+    ):
         return render_template("login.html", error="Invalid email or password"), 401
-    
+
     session["user_id"] = user.id
     session["user_email"] = user.email
     return redirect(url_for("auth.dashboard"))
@@ -50,33 +62,38 @@ def auth_login():
 def auth_signup():
     if request.method == "GET":
         return render_template("signup.html")
-    
+
     # POST: Email/password signup
     email = request.form.get("email", "").strip()
     name = request.form.get("name", "").strip()
     password = request.form.get("password", "").strip()
     confirm_password = request.form.get("confirm_password", "").strip()
-    
+
     if not email or not name or not password:
         return render_template("signup.html", error="All fields required"), 400
-    
+
     if password != confirm_password:
         return render_template("signup.html", error="Passwords do not match"), 400
-    
+
     if len(password) < 6:
-        return render_template("signup.html", error="Password must be at least 6 characters"), 400
-    
+        return (
+            render_template(
+                "signup.html", error="Password must be at least 6 characters"
+            ),
+            400,
+        )
+
     db = next(get_db())
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user:
         return render_template("signup.html", error="Email already registered"), 409
-    
+
     hashed_pwd = hash_password(password)
     user = User(email=email, name=name, hashed_password=hashed_pwd)
     db.add(user)
     db.commit()
     db.refresh(user)
-    
+
     session["user_id"] = user.id
     session["user_email"] = user.email
     return redirect(url_for("auth.dashboard"))
@@ -117,7 +134,12 @@ def auth_callback():
 
     email = _fetch_user_email(credentials.token)
     if not email:
-        return render_template("error.html", message="Failed to retrieve email from Google."), 500
+        return (
+            render_template(
+                "error.html", message="Failed to retrieve email from Google."
+            ),
+            500,
+        )
 
     db = next(get_db())
     user = db.query(User).filter(User.email == email).first()
@@ -127,8 +149,14 @@ def auth_callback():
         db.commit()
         db.refresh(user)
 
-    expires_in = int((credentials.expiry - datetime.datetime.utcnow()).total_seconds()) if credentials.expiry else None
-    register_token(user.id, "gmail", credentials.token, credentials.refresh_token, expires_in)
+    expires_in = (
+        int((credentials.expiry - datetime.datetime.utcnow()).total_seconds())
+        if credentials.expiry
+        else None
+    )
+    register_token(
+        user.id, "gmail", credentials.token, credentials.refresh_token, expires_in
+    )
 
     session["user_id"] = user.id
     session["user_email"] = user.email
@@ -143,11 +171,14 @@ def auth_logout():
 
 @auth_bp.route("/auth/status")
 def auth_status():
-    return jsonify({
-        "authenticated": bool(session.get("user_email")),
-        "user_email": session.get("user_email"),
-        "gmail_enabled": os.getenv("GMAIL_API_ENABLED", "false").lower() in ["true", "1", "yes"],
-    })
+    return jsonify(
+        {
+            "authenticated": bool(session.get("user_email")),
+            "user_email": session.get("user_email"),
+            "gmail_enabled": os.getenv("GMAIL_API_ENABLED", "false").lower()
+            in ["true", "1", "yes"],
+        }
+    )
 
 
 @auth_bp.route("/dashboard")
@@ -159,7 +190,9 @@ def dashboard():
 
 def _fetch_user_email(access_token: str):
     url = "https://openidconnect.googleapis.com/v1/userinfo"
-    response = requests.get(url, headers={"Authorization": f"Bearer {access_token}"}, timeout=10)
+    response = requests.get(
+        url, headers={"Authorization": f"Bearer {access_token}"}, timeout=10
+    )
     if response.ok:
         return response.json().get("email")
     return None

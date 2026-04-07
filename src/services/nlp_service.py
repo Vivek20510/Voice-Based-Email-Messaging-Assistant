@@ -13,7 +13,9 @@ def summarize_text(text: str, model: str = None):
         model = os.getenv("NLP_MODEL", "sshleifer/tiny-mbart")
 
     if pipeline is None:
-        raise RuntimeError("transformers package not installed; pip install transformers")
+        raise RuntimeError(
+            "transformers package not installed; pip install transformers"
+        )
 
     try:
         language = detect(text)
@@ -31,7 +33,9 @@ def suggest_replies(text: str, model: str = None):
         model = os.getenv("NLP_MODEL", "google/flan-t5-small")
 
     if pipeline is None:
-        raise RuntimeError("transformers package not installed; pip install transformers")
+        raise RuntimeError(
+            "transformers package not installed; pip install transformers"
+        )
 
     try:
         language = detect(text)

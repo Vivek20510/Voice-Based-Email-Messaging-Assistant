@@ -10,9 +10,13 @@ except Exception:
 def transcribe_audio(audio_file):
     """Transcribe audio file to text using Whisper if available."""
     if whisper is None:
-        raise RuntimeError("whisper package is not installed. install via 'pip install -U openai-whisper'.")
+        raise RuntimeError(
+            "whisper package is not installed. install via 'pip install -U openai-whisper'."
+        )
 
-    model = whisper.load_model("small")  # Use small model for better multi-language support
+    model = whisper.load_model(
+        "small"
+    )  # Use small model for better multi-language support
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
         temp_path = temp_file.name
 

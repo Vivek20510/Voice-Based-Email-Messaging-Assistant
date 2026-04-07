@@ -19,6 +19,7 @@ def test_transcribe_audio_detects_language():
         # Mock file save
         with patch("werkzeug.datastructures.FileStorage.save"):
             from werkzeug.datastructures import FileStorage
+
             mock_file = MagicMock(spec=FileStorage)
             result = transcribe_audio(mock_file)
 
