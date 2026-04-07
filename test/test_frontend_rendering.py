@@ -20,8 +20,8 @@ def test_dashboard_renders(client):
     assert response.status_code == 200
     assert b"Voice Email Assistant" in response.data
     assert b"test@example.com" in response.data
-    assert b"Open AI Assistant" in response.data
-    assert b"Use Voice" in response.data
+    assert b"Voice Email Assistant Dashboard" in response.data
+    assert b"Start Recording" in response.data
 
 
 def test_login_page_renders(client):

@@ -27,7 +27,7 @@ def test_auth_login_uses_configured_redirect_uri(monkeypatch):
         "src.web.auth_routes.get_authorization_url", fake_get_authorization_url
     )
 
-    response = client.get("/auth/login")
+    response = client.get("/auth/login-oauth")
 
     assert response.status_code == 302
     assert response.headers["Location"] == "https://accounts.google.com/mock"
@@ -46,7 +46,7 @@ def test_auth_login_renders_mismatch_error(monkeypatch):
         ),
     )
 
-    response = client.get("/auth/login")
+    response = client.get("/auth/login-oauth")
 
     assert response.status_code == 200
     assert (
@@ -74,7 +74,7 @@ def test_auth_login_falls_back_to_request_url_when_env_missing(monkeypatch):
         lambda redirect_uri: ("https://accounts.google.com/mock", "state-123"),
     )
 
-    response = client.get("/auth/login", base_url="http://localhost:5000")
+    response = client.get("/auth/login-oauth", base_url="http://localhost:5000")
 
     assert response.status_code == 302
     assert captured["redirect_uri"] == "http://localhost:5000/auth/google/callback"
