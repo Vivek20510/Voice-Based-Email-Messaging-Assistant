@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border);">
+    <div>
+      <h1>Welcome, {{ user_email }}</h1>
+      <p style="color: var(--secondary); margin-top: 0;">Voice Email Assistant Dashboard</p>
+    </div>
+    <a href="/auth/logout" class="btn btn-danger">Logout</a>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Voice Section -->
+    <div class="card">
+      <h2>🎤 Voice Assistant</h2>
+      <p style="color: var(--secondary); margin-bottom: 1rem;">Record audio and transcribe with multi-language support.</p>
+      <button id="record-btn" class="btn btn-primary">Start Recording</button>
+      <div id="transcription-output" style="margin-top: 1rem; display: none; background: var(--light); padding: 1rem; border-radius: 4px;"></div>
+    </div>
+
+    <!-- Compose Email -->
+    <div class="card">
+      <h2>✉️ Compose Email</h2>
+      <form id="email-form">
+        <div class="form-group">
+          <label for="to">To:</label>
+          <input type="email" id="to" placeholder="recipient@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="subject">Subject:</label>
+          <input type="text" id="subject" placeholder="Email subject" required>
+        </div>
+        <div class="form-group">
+          <label for="body">Message:</label>
+          <textarea id="body" rows="4" placeholder="Write your message..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">📤 Send Email</button>
+      </form>
+    </div>
+
+    <!-- Inbox -->
+    <div class="card">
+      <h2>📧 Your Inbox</h2>
+      <p style="color: var(--secondary); margin-bottom: 1rem; font-size: 0.9rem;">View and read your recent emails</p>
+      <button id="load-inbox" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">🔄 Load Emails</button>
+      <div id="inbox-list" style="margin-top: 1rem;">
+        <p style="color: var(--secondary);">Click "Load Emails" to view your inbox</p>
+      </div>
+    </div>
+
+    <!-- Telegram Bot -->
+    <div class="card">
+      <h2>💬 Telegram Bot</h2>
+      <p style="color: var(--secondary); margin-bottom: 1rem; font-size: 0.9rem;">Real-time messaging via Telegram</p>
+      <div id="telegram-status" style="background: var(--light); padding: 1rem; border-radius: 4px; margin-bottom: 1rem; min-height: 40px; display: flex; align-items: center;">Loading...</div>
+      <p style="font-size: 0.85rem; color: var(--secondary);">💡 Tip: Text /help in Telegram to see all available commands</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
