@@ -29,7 +29,6 @@ def test_send_telegram_missing(client):
 
 def test_nlp_routes(client, monkeypatch):
     # Mock summarize and suggest behavior to avoid heavy model loads
-    from src.services.nlp_service import summarize_text, suggest_replies
 
     monkeypatch.setattr("src.app.summarize_text", lambda text: {"summary": "summary", "language": "en"})
     monkeypatch.setattr("src.app.suggest_replies", lambda text: {"replies": "reply1;reply2", "language": "en"})

@@ -7,7 +7,7 @@ from src.services.gmail_service import send_email_real, fetch_message_ids, fetch
 
 def send_email(to: str, subject: str, body: str, user_id: int = None) -> Dict[str, str]:
     """Send an email via Gmail API or stub on missing config."""
-    if not os.getenv("GMAIL_API_ENABLED", "false").lower() in ["1", "true", "yes"]:
+    if os.getenv("GMAIL_API_ENABLED", "false").lower() not in ["1", "true", "yes"]:
         return {
             "status": "stub",
             "message": "Email sending stubbed. Set GMAIL_API_ENABLED=true to enable real integration.",
@@ -27,7 +27,7 @@ def send_email(to: str, subject: str, body: str, user_id: int = None) -> Dict[st
 
 
 def list_emails(user_id: int):
-    if not os.getenv("GMAIL_API_ENABLED", "false").lower() in ["1", "true", "yes"]:
+    if os.getenv("GMAIL_API_ENABLED", "false").lower() not in ["1", "true", "yes"]:
         return {"status": "stub", "messages": []}
 
     if not user_id:
@@ -42,7 +42,7 @@ def list_emails(user_id: int):
 
 
 def read_email(user_id: int, message_id: str):
-    if not os.getenv("GMAIL_API_ENABLED", "false").lower() in ["1", "true", "yes"]:
+    if os.getenv("GMAIL_API_ENABLED", "false").lower() not in ["1", "true", "yes"]:
         return {"status": "stub", "message_id": message_id, "body": "This is a placeholder."}
 
     if not user_id:

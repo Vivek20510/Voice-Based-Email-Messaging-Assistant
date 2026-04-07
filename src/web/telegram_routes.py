@@ -1,4 +1,3 @@
-import json
 from flask import Blueprint, request, jsonify
 from src.services.telegram_service import handle_update
 

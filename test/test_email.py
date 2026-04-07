@@ -1,5 +1,3 @@
-import os
-import pytest
 from src.services.email_service import send_email, list_emails, read_email
 
 

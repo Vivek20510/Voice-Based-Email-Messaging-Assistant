@@ -2,7 +2,6 @@ import os
 import requests
 from typing import Dict, Any
 
-from src.services.email_service import list_emails, read_email
 from src.services.nlp_service import summarize_text
 
 

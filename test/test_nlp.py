@@ -1,4 +1,3 @@
-import pytest
 from src.services.nlp_service import summarize_text, suggest_replies
 
 

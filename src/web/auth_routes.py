@@ -4,7 +4,7 @@ from flask import Blueprint, redirect, request, session, url_for, render_templat
 import requests
 
 from src.db import SessionLocal
-from src.models import User, UserToken
+from src.models import User
 from src.services.gmail_service import (
     get_authorization_url,
     exchange_code_for_credentials,

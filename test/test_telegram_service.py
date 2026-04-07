@@ -1,4 +1,3 @@
-import pytest
 from src.services.telegram_service import handle_command, handle_update
 
 
