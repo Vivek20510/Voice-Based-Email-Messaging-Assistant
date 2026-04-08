@@ -1,4 +1,5 @@
 import os
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 from pathlib import Path
 from flask import Flask, jsonify, request, session, render_template, redirect, url_for
 from src.services.voice import transcribe_audio, speak_text
@@ -36,13 +37,9 @@ def favicon():
 
 @app.route("/")
 def home():
-    query_email = request.args.get("user_email")
-    if query_email:
-        session["user_email"] = query_email
-        return redirect(url_for("home"))
-
+    # Redirect authenticated users to dashboard
     if session.get("user_email"):
-        return render_template("dashboard.html", user_email=session.get("user_email"))
+        return redirect(url_for("auth.dashboard"))
     return render_template("login.html")
 
 

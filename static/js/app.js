@@ -66,8 +66,11 @@ async function loadInitialEmails() {
 
 async function loadInbox() {
     try {
-        const result = await apiRequest('/email/list');
-        displayInbox(result.emails || result || []);
+        const result = await apiListEmails();
+        if (result.status === 'error') {
+            throw new Error(result.message || 'Unable to load inbox');
+        }
+        displayInbox(Array.isArray(result.messages) ? result.messages : []);
     } catch (error) {
         console.error('Failed to load inbox:', error);
         showAlert('Failed to load emails', 'error');
@@ -103,14 +106,15 @@ function displayInbox(emails) {
 
 async function readEmailItem(emailId) {
     try {
-        const result = await apiRequest('/email/read', {
-            method: 'POST',
-            body: JSON.stringify({ id: emailId })
-        });
-        
-        const body = result.body || result.message || 'No content';
-        const from = result.from || 'Unknown';
-        const subject = result.subject || '(No subject)';
+        const result = await apiReadEmail(emailId);
+        if (result.status === 'error') {
+            throw new Error(result.message || 'Unable to read email');
+        }
+
+        const email = result.message || result;
+        const body = email.body || result.body || 'No content';
+        const from = email.from || 'Unknown';
+        const subject = email.subject || '(No subject)';
         
         alert(`From: ${from}\nSubject: ${subject}\n\n${body}`);
     } catch (error) {

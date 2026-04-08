@@ -163,4 +163,4 @@ pytest -q
 ## Future Plan
 The broader multi-phase roadmap remains unchanged in:
 
-- [PLAN.md](/c:/Users/HP/Voice-Based%20Email%20%26%20Messaging%20Assistant/PLAN.md)
+ [PLAN.md](/c:/Users/HP/Voice-Based%20Email%20%26%20Messaging%20Assistant/PLAN.md)

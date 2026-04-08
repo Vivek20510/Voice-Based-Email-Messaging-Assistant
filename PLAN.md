@@ -67,10 +67,10 @@ A capable backend API with stubbed integrations and automated test validation.
 3. Create OAuth 2.0 credentials for a Web application.
 4. Add redirect URI for local development:
    - `http://localhost:5000/auth/google/callback`
-5. Download credentials JSON and save as `.secrets/google_oauth.json`.
+5. Download credentials JSON and save as `.secrets/client_secret_2_370325942201-lrhpk5nuofeqau9afflke2n7huqp7fqq.apps.googleusercontent.com.json`.
 6. Set environment variables in `.env`:
    - `GMAIL_API_ENABLED=true`
-   - `GOOGLE_OAUTH_CREDENTIALS_PATH=.secrets/google_oauth.json`
+   - `GOOGLE_OAUTH_CREDENTIALS_PATH=.secrets/client_secret_2_370325942201-lrhpk5nuofeqau9afflke2n7huqp7fqq.apps.googleusercontent.com.json`
    - `GOOGLE_OAUTH_REDIRECT_URI=http://localhost:5000/auth/google/callback`
 
 #### Backend Tasks
@@ -232,7 +232,7 @@ FLASK_ENV=development
 SECRET_KEY=replace-with-secret
 DATABASE_URL=sqlite:///./data.db
 GMAIL_API_ENABLED=true
-GOOGLE_OAUTH_CREDENTIALS_PATH=.secrets/google_oauth.json
+GOOGLE_OAUTH_CREDENTIALS_PATH=.secrets/client_secret_2_370325942201-lrhpk5nuofeqau9afflke2n7huqp7fqq.apps.googleusercontent.com.json
 GOOGLE_OAUTH_REDIRECT_URI=http://localhost:5000/auth/google/callback
 TELEGRAM_BOT_TOKEN=<token>
 NLP_MODEL=google/flan-t5-small

@@ -50,12 +50,22 @@ def get_authorization_url(redirect_uri: str):
         include_granted_scopes="true",
         prompt="consent",
     )
-    return auth_url, state
+    return auth_url, state, flow.code_verifier
 
 
 def exchange_code_for_credentials(code: str, redirect_uri: str):
     flow = create_oauth_flow(redirect_uri)
     flow.fetch_token(code=code)
+    return flow.credentials
+
+
+def exchange_authorization_response_for_credentials(
+    authorization_response: str, redirect_uri: str, code_verifier: str = None
+):
+    flow = create_oauth_flow(redirect_uri)
+    if code_verifier:
+        flow.code_verifier = code_verifier
+    flow.fetch_token(authorization_response=authorization_response)
     return flow.credentials
 
 
