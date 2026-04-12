@@ -9,25 +9,27 @@ def client():
 
 
 def test_dashboard_renders(client):
-    response = client.get("/?user_email=test@example.com")
-    assert response.status_code == 302
-
     with client.session_transaction() as sess:
         sess["user_id"] = 1
         sess["user_email"] = "test@example.com"
 
     response = client.get("/")
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/dashboard")
+
+    response = client.get("/dashboard")
     assert response.status_code == 200
-    assert b"Voice Email Assistant" in response.data
-    assert b"test@example.com" in response.data
-    assert b"Voice Email Assistant Dashboard" in response.data
-    assert b"Start Recording" in response.data
+    assert b"Unified Inbox" in response.data
+    assert b"Voice Assistant" in response.data
+    assert b"Quick reply" in response.data
+    assert b"Gmail" in response.data
 
 
 def test_login_page_renders(client):
     response = client.get("/auth/login")
     assert response.status_code == 200
-    assert b"Login" in response.data
+    assert b"Welcome back" in response.data
+    assert b"Continue with Google" in response.data
 
 
 def test_base_template_includes_static_files(client):
