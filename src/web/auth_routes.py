@@ -378,6 +378,7 @@ def settings():
     return render_template(
         "settings.html",
         user_email=session.get("user_email"),
+        success=request.args.get("success"),
         **service_status,
     )
 
@@ -452,11 +453,9 @@ def settings_telegram():
         db.add(token)
 
     db.commit()
-
-    service_status = _get_service_status(user_id)
-    return render_template(
-        "settings.html",
-        user_email=session.get("user_email"),
-        success="Telegram bot token saved successfully",
-        **service_status,
+    return redirect(
+        url_for(
+            "auth.settings",
+            success="Telegram bot token saved successfully",
+        )
     )
