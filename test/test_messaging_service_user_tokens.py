@@ -49,7 +49,7 @@ class TestUserToken:
         mock_post.return_value = mock_response
 
         # Send message
-        send_telegram_message("12345", "Test message", user_id=test_user.id)
+        result = send_telegram_message("12345", "Test message", user_id=test_user.id)
 
         assert result["status"] == "sent"
         # Verify it used the user token
@@ -95,7 +95,7 @@ class TestUserToken:
         mock_post.return_value = mock_response
 
         # Send message
-        result = send_telegram_message("12345", "Test message", user_id=test_user.id)
+        send_telegram_message("12345", "Test message", user_id=test_user.id)
 
         # Verify it used the user token, not env token
         call_url = mock_post.call_args[0][0]
