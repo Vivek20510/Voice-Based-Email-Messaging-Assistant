@@ -1,4 +1,5 @@
 import os
+
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 from pathlib import Path
 from flask import Flask, jsonify, request, session, render_template, redirect, url_for

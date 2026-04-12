@@ -72,7 +72,7 @@ def _get_service_status(user_id: int | None):
     """Get service connection status for the given user."""
     if not user_id:
         return {"gmail_connected": False, "telegram_connected": False}
-    
+
     db = next(get_db())
     gmail_token = (
         db.query(UserToken)
@@ -84,7 +84,7 @@ def _get_service_status(user_id: int | None):
         .filter(UserToken.user_id == user_id, UserToken.service == "telegram")
         .first()
     )
-    
+
     return {
         "gmail_connected": bool(gmail_token),
         "telegram_connected": bool(telegram_token),
@@ -245,7 +245,9 @@ def auth_callback():
     except Exception as exc:
         print(f"OAuth token exchange failed: {exc}")
         return (
-            render_template("error.html", message=f"OAuth token exchange failed: {exc}"),
+            render_template(
+                "error.html", message=f"OAuth token exchange failed: {exc}"
+            ),
             500,
         )
 
@@ -385,14 +387,17 @@ def settings_gmail_connect():
     """Initiate Gmail OAuth connection from settings."""
     if not session.get("user_email"):
         return redirect(url_for("auth.auth_login"))
-    
+
     next_url = "settings"
     redirect_uri = url_for("auth.auth_callback", _external=True)
     try:
         redirect_uri = get_validated_redirect_uri(redirect_uri)
         auth_url, state, code_verifier = get_authorization_url(redirect_uri)
     except RuntimeError as exc:
-        return render_template("settings.html", error="Gmail setup failed: " + str(exc)), 400
+        return (
+            render_template("settings.html", error="Gmail setup failed: " + str(exc)),
+            400,
+        )
 
     signed_state = _encode_oauth_state(next_url, code_verifier)
     auth_url = _replace_state_in_auth_url(auth_url, signed_state)
@@ -407,27 +412,30 @@ def settings_telegram():
     """Store Telegram bot token."""
     if not session.get("user_email"):
         return redirect(url_for("auth.auth_login"))
-    
+
     telegram_token = request.form.get("telegram_token", "").strip()
     if not telegram_token:
         service_status = _get_service_status(session.get("user_id"))
-        return render_template(
-            "settings.html",
-            user_email=session.get("user_email"),
-            error="Telegram bot token cannot be empty",
-            **service_status,
-        ), 400
-    
+        return (
+            render_template(
+                "settings.html",
+                user_email=session.get("user_email"),
+                error="Telegram bot token cannot be empty",
+                **service_status,
+            ),
+            400,
+        )
+
     user_id = session.get("user_id")
     db = next(get_db())
-    
+
     # Check if token already exists
     existing_token = (
         db.query(UserToken)
         .filter(UserToken.user_id == user_id, UserToken.service == "telegram")
         .first()
     )
-    
+
     if existing_token:
         # Update existing token
         existing_token.access_token = telegram_token
@@ -442,9 +450,9 @@ def settings_telegram():
             expires_at=datetime.datetime.utcnow(),
         )
         db.add(token)
-    
+
     db.commit()
-    
+
     service_status = _get_service_status(user_id)
     return render_template(
         "settings.html",

@@ -140,7 +140,11 @@ def test_auth_login_falls_back_to_request_url_when_env_missing(monkeypatch):
     )
     monkeypatch.setattr(
         "src.web.auth_routes.get_authorization_url",
-        lambda redirect_uri: ("https://accounts.google.com/mock", "state-123", "verifier-123"),
+        lambda redirect_uri: (
+            "https://accounts.google.com/mock",
+            "state-123",
+            "verifier-123",
+        ),
     )
 
     response = client.get("/auth/login-oauth", base_url="http://localhost:5000")
@@ -243,9 +247,9 @@ def test_auth_callback_renders_exact_token_exchange_error(monkeypatch):
     )
     monkeypatch.setattr(
         "src.web.auth_routes.exchange_authorization_response_for_credentials",
-        lambda authorization_response, redirect_uri, code_verifier: (_ for _ in ()).throw(
-            RuntimeError("invalid_grant: Bad Request")
-        ),
+        lambda authorization_response, redirect_uri, code_verifier: (
+            _ for _ in ()
+        ).throw(RuntimeError("invalid_grant: Bad Request")),
     )
 
     response = client.get(
@@ -341,9 +345,9 @@ def test_auth_callback_uses_signed_state_when_session_is_missing(monkeypatch):
     monkeypatch.setattr("src.web.auth_routes.get_db", lambda: iter([FakeDb()]))
 
     with app.test_request_context():
-        signed_state = __import__("src.web.auth_routes", fromlist=["_encode_oauth_state"])._encode_oauth_state(
-            "dashboard", "verifier-from-state"
-        )
+        signed_state = __import__(
+            "src.web.auth_routes", fromlist=["_encode_oauth_state"]
+        )._encode_oauth_state("dashboard", "verifier-from-state")
 
     response = client.get(
         f"/auth/google/callback?state={signed_state}&code=auth-code",
