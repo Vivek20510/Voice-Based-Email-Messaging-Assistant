@@ -48,6 +48,34 @@ def health():
     return jsonify({"status": "ok"})
 
 
+@app.route("/terms")
+def terms():
+    return render_template(
+        "simple_page.html",
+        title="Terms of Service",
+        message=(
+            "A full Terms of Service page has not been drafted yet. "
+            "This placeholder keeps the auth flow from linking to a missing page."
+        ),
+        cta_href="/auth/signup",
+        cta_label="Back to sign up",
+    )
+
+
+@app.route("/privacy")
+def privacy():
+    return render_template(
+        "simple_page.html",
+        title="Privacy Policy",
+        message=(
+            "A full Privacy Policy page has not been drafted yet. "
+            "This placeholder keeps the auth flow from linking to a missing page."
+        ),
+        cta_href="/auth/signup",
+        cta_label="Back to sign up",
+    )
+
+
 @app.route("/voice/transcribe", methods=["POST"])
 def voice_transcribe():
     if "audio" not in request.files:

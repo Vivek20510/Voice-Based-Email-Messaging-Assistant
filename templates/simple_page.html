@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card" style="max-width: 720px; margin: 3rem auto;">
+  <h1>{{ title }}</h1>
+  <p style="margin-bottom: 1rem; color: var(--secondary);">{{ message }}</p>
+  {% if cta_href and cta_label %}
+    <a class="btn btn-primary" href="{{ cta_href }}">{{ cta_label }}</a>
+  {% endif %}
+</section>
+{% endblock %}

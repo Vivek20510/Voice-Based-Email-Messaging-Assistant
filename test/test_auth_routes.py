@@ -3,6 +3,70 @@ from types import SimpleNamespace
 from src.app import app
 
 
+def test_auth_login_renders_standalone_layout():
+    client = app.test_client()
+
+    response = client.get("/auth/login")
+
+    assert response.status_code == 200
+    assert b"login-split" in response.data
+    assert b"fonts.googleapis.com" in response.data
+    assert b"site-header" not in response.data
+    assert b"site-footer" not in response.data
+
+
+def test_auth_signup_renders_standalone_layout():
+    client = app.test_client()
+
+    response = client.get("/auth/signup")
+
+    assert response.status_code == 200
+    assert b"login-split" in response.data
+    assert b"fonts.googleapis.com" in response.data
+    assert b"site-header" not in response.data
+    assert b"site-footer" not in response.data
+
+
+def test_auth_login_preserves_email_after_invalid_submit():
+    client = app.test_client()
+
+    response = client.post(
+        "/auth/login",
+        data={"email": "person@example.com", "password": ""},
+    )
+
+    assert response.status_code == 400
+    assert b"Email and password required" in response.data
+    assert b'value="person@example.com"' in response.data
+
+
+def test_auth_signup_preserves_name_and_email_after_invalid_submit():
+    client = app.test_client()
+
+    response = client.post(
+        "/auth/signup",
+        data={
+            "name": "Jane Doe",
+            "email": "jane@example.com",
+            "password": "secret1",
+            "confirm_password": "different",
+        },
+    )
+
+    assert response.status_code == 400
+    assert b"Passwords do not match" in response.data
+    assert b'value="Jane Doe"' in response.data
+    assert b'value="jane@example.com"' in response.data
+
+
+def test_auth_placeholder_links_exist():
+    client = app.test_client()
+
+    for path in ["/auth/forgot-password", "/auth/login-voice", "/terms", "/privacy"]:
+        response = client.get(path)
+        assert response.status_code == 200
+
+
 def test_auth_login_uses_configured_redirect_uri(monkeypatch):
     client = app.test_client()
     monkeypatch.setenv(
@@ -30,11 +94,13 @@ def test_auth_login_uses_configured_redirect_uri(monkeypatch):
     response = client.get("/auth/login-oauth")
 
     assert response.status_code == 302
-    assert response.headers["Location"] == "https://accounts.google.com/mock"
+    assert response.headers["Location"].startswith("https://accounts.google.com/mock")
+    assert "state=" in response.headers["Location"]
+    assert "state=state-123" not in response.headers["Location"]
     assert captured["redirect_uri"] == "http://localhost:5000/auth/google/callback"
     assert captured["fallback_uri"].endswith("/auth/google/callback")
     with client.session_transaction() as session:
-        assert session["oauth_state"] == "state-123"
+        assert session["oauth_state"] != "state-123"
         assert session["oauth_code_verifier"] == "verifier-123"
 
 
@@ -212,3 +278,78 @@ def test_auth_callback_requires_code_verifier(monkeypatch):
         b"OAuth token exchange failed: Missing OAuth code verifier. Start the Google login flow again."
         in response.data
     )
+
+
+def test_auth_callback_uses_signed_state_when_session_is_missing(monkeypatch):
+    client = app.test_client()
+
+    monkeypatch.setattr(
+        "src.web.auth_routes.get_validated_redirect_uri",
+        lambda fallback_uri: "http://localhost:5000/auth/google/callback",
+    )
+
+    captured = {}
+
+    def fake_exchange_authorization_response_for_credentials(
+        authorization_response, redirect_uri, code_verifier
+    ):
+        captured["authorization_response"] = authorization_response
+        captured["redirect_uri"] = redirect_uri
+        captured["code_verifier"] = code_verifier
+        return SimpleNamespace(
+            token="token-123", refresh_token="refresh-123", expiry=None
+        )
+
+    monkeypatch.setattr(
+        "src.web.auth_routes.exchange_authorization_response_for_credentials",
+        fake_exchange_authorization_response_for_credentials,
+    )
+    monkeypatch.setattr(
+        "src.web.auth_routes._fetch_user_email", lambda access_token: "test@example.com"
+    )
+    monkeypatch.setattr(
+        "src.web.auth_routes.register_token", lambda *args, **kwargs: {"status": "ok"}
+    )
+
+    fake_user = SimpleNamespace(
+        id=1, email="test@example.com", name="test", hashed_password=""
+    )
+
+    class FakeQuery:
+        def filter(self, *args, **kwargs):
+            return self
+
+        def first(self):
+            return fake_user
+
+    class FakeDb:
+        def query(self, model):
+            return FakeQuery()
+
+        def add(self, obj):
+            pass
+
+        def commit(self):
+            pass
+
+        def refresh(self, obj):
+            pass
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr("src.web.auth_routes.get_db", lambda: iter([FakeDb()]))
+
+    with app.test_request_context():
+        signed_state = __import__("src.web.auth_routes", fromlist=["_encode_oauth_state"])._encode_oauth_state(
+            "dashboard", "verifier-from-state"
+        )
+
+    response = client.get(
+        f"/auth/google/callback?state={signed_state}&code=auth-code",
+        base_url="http://localhost:5000",
+    )
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/dashboard")
+    assert captured["code_verifier"] == "verifier-from-state"

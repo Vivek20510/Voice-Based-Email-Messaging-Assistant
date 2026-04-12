@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="compose-page">
+  <style>
+    .compose-page {
+      max-width: 860px;
+      margin: 2rem auto;
+      padding: 0 20px 3rem;
+      font-family: 'DM Sans', system-ui, sans-serif;
+    }
+
+    .compose-card {
+      background: white;
+      border: 1.5px solid #ccddf5;
+      border-radius: 18px;
+      box-shadow: 0 18px 40px rgba(15, 45, 107, 0.08);
+      overflow: hidden;
+    }
+
+    .compose-header {
+      background: #f0f7ff;
+      padding: 1.8rem 2rem 1.5rem;
+      border-bottom: 1px solid #e4edf9;
+    }
+
+    .compose-header h1 {
+      font-size: 1.85rem;
+      color: #0f2d6b;
+      margin-bottom: 0.35rem;
+    }
+
+    .compose-header p {
+      color: #53658b;
+      font-size: 0.98rem;
+      line-height: 1.6;
+    }
+
+    .compose-body {
+      padding: 2rem;
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      color: #142b4c;
+      font-size: 0.95rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.95rem 1rem;
+      border: 1.5px solid #d6e2f7;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.96rem;
+      color: #15263f;
+      background: #fbfdff;
+      transition: border-color 0.2s ease;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #2d72d2;
+      box-shadow: 0 0 0 4px rgba(45, 114, 210, 0.09);
+    }
+
+    textarea {
+      min-height: 210px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .voice-section {
+      border: 1.5px solid #c7dcf9;
+      border-radius: 14px;
+      background: #f5fbff;
+      padding: 1.5rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .voice-section h2 {
+      font-size: 1rem;
+      color: #1f4ea0;
+      margin: 0;
+    }
+
+    .voice-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.4rem;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: #1a4da8;
+      color: white;
+      box-shadow: 0 10px 30px rgba(26, 77, 168, 0.16);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #1a4da8;
+      border: 1.5px solid #c7dcf9;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #bf2f3a;
+    }
+
+    .recording-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.7rem 1rem;
+      border-radius: 999px;
+      color: #dc3545;
+      border: 1px solid #f8d7da;
+      background: #fff2f3;
+      font-size: 0.92rem;
+      font-weight: 700;
+      opacity: 0.95;
+    }
+
+    .recording-indicator span {
+      display: inline-block;
+      width: 0.7rem;
+      height: 0.7rem;
+      border-radius: 50%;
+      background: #dc3545;
+      animation: pulse 1.1s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.75; }
+    }
+
+    .transcript-preview {
+      background: #e8f3ff;
+      border-left: 4px solid #2d72d2;
+      padding: 1rem 1.15rem;
+      border-radius: 10px;
+      color: #1a3d70;
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    .field-note {
+      font-size: 0.85rem;
+      color: #6a7d96;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0 0.2rem 0.5rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .char-count {
+      font-size: 0.85rem;
+      color: #6a7d96;
+      text-align: right;
+    }
+
+    .alert {
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .alert-success { background: #d4edda; color: #14532d; }
+    .alert-error { background: #f8d7da; color: #721c24; }
+    .alert-info { background: #dbeafe; color: #1e40af; }
+
+    @media (max-width: 760px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .compose-body {
+        padding: 1.5rem;
+      }
+
+      .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+
+  <div class="compose-card">
+    <div class="compose-header">
+      <h1>Compose Message</h1>
+      <p>Write a new Gmail email or Telegram message, and use voice dictation to transcribe spoken text directly into your draft.</p>
+    </div>
+
+    <div class="compose-body">
+      <div id="compose-alert"></div>
+
+      <form id="compose-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="send-via">Send via</label>
+            <select id="send-via" name="send-via" required>
+              <option value="">Select service</option>
+              <option value="gmail">Gmail</option>
+              <option value="telegram">Telegram</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="recipient" id="recipient-label">Recipient</label>
+            <input id="recipient" name="recipient" type="text" placeholder="Enter email or chat ID" required />
+            <span class="field-note" id="recipient-note">Use an email address for Gmail or a chat ID for Telegram.</span>
+          </div>
+        </div>
+
+        <div class="form-group" id="subject-group" style="display:none;">
+          <label for="subject">Subject</label>
+          <input id="subject" name="subject" type="text" placeholder="Email subject" />
+        </div>
+
+        <div class="voice-section">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+            <div>
+              <h2>Voice dictation</h2>
+              <p class="field-note">Record your voice and automatically insert the transcription into your message.</p>
+            </div>
+          </div>
+
+          <div class="voice-controls">
+            <button type="button" id="voice-record-btn" class="btn btn-secondary">🎙️ Start recording</button>
+            <button type="button" id="voice-stop-btn" class="btn btn-danger" style="display:none;">⏹️ Stop recording</button>
+            <div id="recording-indicator" class="recording-indicator" style="display:none;"><span></span> Recording</div>
+          </div>
+
+          <div id="voice-transcript" class="transcript-preview" style="display:none;">
+            <strong>Transcribed text</strong>
+            <p id="transcript-text" style="margin-top:0.75rem;"></p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="Type your message here..." required></textarea>
+          <div class="char-count"><span id="char-count">0</span> / 5000</div>
+        </div>
+
+        <div class="form-actions">
+          <a href="/dashboard" class="btn btn-secondary">← Back to dashboard</a>
+          <button type="submit" class="btn btn-primary">Send message</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+const composeForm = document.getElementById('compose-form');
+const sendViaSelect = document.getElementById('send-via');
+const subjectGroup = document.getElementById('subject-group');
+const recipientLabel = document.getElementById('recipient-label');
+const recipientNote = document.getElementById('recipient-note');
+const recipientInput = document.getElementById('recipient');
+const subjectInput = document.getElementById('subject');
+const messageInput = document.getElementById('message');
+const charCount = document.getElementById('char-count');
+const alertContainer = document.getElementById('compose-alert');
+const voiceRecordBtn = document.getElementById('voice-record-btn');
+const voiceStopBtn = document.getElementById('voice-stop-btn');
+const recordingIndicator = document.getElementById('recording-indicator');
+const voiceTranscript = document.getElementById('voice-transcript');
+const transcriptText = document.getElementById('transcript-text');
+
+let mediaRecorder = null;
+let audioChunks = [];
+
+sendViaSelect.addEventListener('change', () => {
+  const mode = sendViaSelect.value;
+  if (mode === 'gmail') {
+    subjectGroup.style.display = 'block';
+    recipientLabel.textContent = 'To';
+    recipientInput.type = 'email';
+    recipientInput.placeholder = 'Email address';
+    recipientNote.textContent = 'Use a valid email address for Gmail.';
+  } else if (mode === 'telegram') {
+    subjectGroup.style.display = 'none';
+    recipientLabel.textContent = 'Telegram Chat ID';
+    recipientInput.type = 'text';
+    recipientInput.placeholder = 'Chat ID (e.g. 123456789)';
+    recipientNote.textContent = 'Use the Telegram chat ID for the recipient.';
+  } else {
+    subjectGroup.style.display = 'none';
+    recipientLabel.textContent = 'Recipient';
+    recipientInput.type = 'text';
+    recipientInput.placeholder = 'Enter email or chat ID';
+    recipientNote.textContent = 'Choose a service first.';
+  }
+});
+
+messageInput.addEventListener('input', () => {
+  charCount.textContent = messageInput.value.length;
+});
+
+voiceRecordBtn.addEventListener('click', async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = event => {
+      if (event.data.size > 0) audioChunks.push(event.data);
+    };
+
+    mediaRecorder.onstart = () => {
+      voiceRecordBtn.style.display = 'none';
+      voiceStopBtn.style.display = 'inline-flex';
+      recordingIndicator.style.display = 'inline-flex';
+    };
+
+    mediaRecorder.onstop = async () => {
+      voiceRecordBtn.style.display = 'inline-flex';
+      voiceStopBtn.style.display = 'none';
+      recordingIndicator.style.display = 'none';
+      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      await transcribeAudio(audioBlob);
+    };
+
+    mediaRecorder.start();
+  } catch (err) {
+    showComposeAlert('Unable to access microphone. Please allow microphone permissions.', 'error');
+    console.error(err);
+  }
+});
+
+voiceStopBtn.addEventListener('click', () => {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+  }
+});
+
+async function transcribeAudio(blob) {
+  showComposeAlert('Transcribing audio…', 'info');
+  const formData = new FormData();
+  formData.append('audio', blob, 'recording.webm');
+
+  try {
+    const response = await fetch('/voice/transcribe', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => null);
+      throw new Error(errData?.error || 'Transcription failed');
+    }
+
+    const data = await response.json();
+    const transcript = data.transcription || data.text || '';
+    if (transcript) {
+      messageInput.value = (messageInput.value ? messageInput.value + ' ' : '') + transcript;
+      charCount.textContent = messageInput.value.length;
+      transcriptText.textContent = transcript;
+      voiceTranscript.style.display = 'block';
+      showComposeAlert('Transcription added to message.', 'success');
+    } else {
+      throw new Error('No transcription text returned');
+    }
+  } catch (error) {
+    showComposeAlert(error.message || 'Transcription error', 'error');
+    console.error(error);
+  }
+}
+
+composeForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  const service = sendViaSelect.value;
+  const recipient = recipientInput.value.trim();
+  const subject = subjectInput.value.trim();
+  const message = messageInput.value.trim();
+
+  if (!service || !recipient || !message) {
+    showComposeAlert('Please complete the required fields.', 'error');
+    return;
+  }
+
+  if (service === 'gmail' && !subject) {
+    showComposeAlert('Please enter a subject for Gmail messages.', 'error');
+    return;
+  }
+
+  try {
+    showComposeAlert('Sending message…', 'info');
+    let result;
+
+    if (service === 'gmail') {
+      result = await fetch('/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: recipient, subject, body: message }),
+      }).then(r => r.json());
+    } else {
+      result = await fetch('/message/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: recipient, text: message }),
+      }).then(r => r.json());
+    }
+
+    if (result.status === 'sent' || result.status === 'ok') {
+      showComposeAlert('Message sent successfully!', 'success');
+      composeForm.reset();
+      voiceTranscript.style.display = 'none';
+      charCount.textContent = '0';
+      subjectGroup.style.display = 'none';
+      setTimeout(() => window.location.href = '/dashboard', 1400);
+    } else {
+      showComposeAlert(result.error || 'Unable to send message.', 'error');
+    }
+  } catch (error) {
+    showComposeAlert(error.message || 'Send request failed.', 'error');
+    console.error(error);
+  }
+});
+
+function showComposeAlert(message, type = 'info') {
+  alertContainer.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+}
+</script>
+{% endblock %}

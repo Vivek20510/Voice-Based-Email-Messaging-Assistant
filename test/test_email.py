@@ -12,6 +12,7 @@ def test_list_emails_stub(monkeypatch):
     result = list_emails(1)
     assert result["status"] == "stub"
     assert isinstance(result["messages"], list)
+    assert isinstance(result["emails"], list)
 
 
 def test_read_email_stub(monkeypatch):
@@ -33,3 +34,30 @@ def test_read_email_auth_required(monkeypatch):
     result = read_email(None, "123")
     assert result["status"] == "error"
     assert "Authentication required" in result["message"]
+
+
+def test_list_emails_returns_preview_payload(monkeypatch):
+    monkeypatch.setenv("GMAIL_API_ENABLED", "true")
+    monkeypatch.setattr(
+        "src.services.email_service.get_token",
+        lambda user_id, service: {"access_token": "token"},
+    )
+    monkeypatch.setattr(
+        "src.services.email_service.fetch_message_summaries",
+        lambda token, user_id, register_token: [
+            {
+                "id": "msg-1",
+                "from": "sender@example.com",
+                "subject": "Hello",
+                "preview": "Preview text",
+                "date": "2026-04-12T10:30:00Z",
+                "channel": "email",
+            }
+        ],
+    )
+
+    result = list_emails(1)
+
+    assert result["status"] == "ok"
+    assert result["messages"][0]["subject"] == "Hello"
+    assert result["emails"][0]["from"] == "sender@example.com"

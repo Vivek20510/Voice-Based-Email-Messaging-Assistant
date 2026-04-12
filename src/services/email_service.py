@@ -2,7 +2,11 @@ import os
 from typing import Dict
 
 from src.services.auth import get_token, register_token
-from src.services.gmail_service import send_email_real, fetch_message_ids, fetch_message
+from src.services.gmail_service import (
+    send_email_real,
+    fetch_message_summaries,
+    fetch_message,
+)
 
 
 def send_email(to: str, subject: str, body: str, user_id: int = None) -> Dict[str, str]:
@@ -31,7 +35,7 @@ def send_email(to: str, subject: str, body: str, user_id: int = None) -> Dict[st
 
 def list_emails(user_id: int):
     if os.getenv("GMAIL_API_ENABLED", "false").lower() not in ["1", "true", "yes"]:
-        return {"status": "stub", "messages": []}
+        return {"status": "stub", "messages": [], "emails": []}
 
     if not user_id:
         return {"status": "error", "message": "Authentication required."}
@@ -43,8 +47,8 @@ def list_emails(user_id: int):
             "message": "No Gmail credentials available for the signed-in user.",
         }
 
-    messages = fetch_message_ids(token, user_id, register_token)
-    return {"status": "ok", "messages": messages}
+    messages = fetch_message_summaries(token, user_id, register_token)
+    return {"status": "ok", "messages": messages, "emails": messages}
 
 
 def read_email(user_id: int, message_id: str):
