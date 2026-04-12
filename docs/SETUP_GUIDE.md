@@ -53,6 +53,13 @@ python -m flask run --host 0.0.0.0 --port 5000
 
 App available at `http://localhost:5000`.
 
+### Step 7: Test New Features
+After setup, test the enhanced frontend:
+- Navigate to `/compose` to test the compose page with voice dictation
+- In dashboard, click email cards to test the message view modal
+- Verify service status indicators in dashboard and settings
+- Test Gmail OAuth and Telegram token setup in settings
+
 ---
 
 ## Google OAuth Setup

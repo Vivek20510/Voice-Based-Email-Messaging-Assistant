@@ -10,17 +10,17 @@ def send_telegram_message(
     chat_id: str, text: str, user_id: Optional[int] = None
 ) -> Dict[str, str]:
     """Send a Telegram message.
-    
+
     Args:
         chat_id: The Telegram chat ID.
         text: The message text.
         user_id: Optional user ID to look up user-specific bot token.
-    
+
     Returns:
         A response dictionary.
     """
     token = None
-    
+
     # If user_id provided, look for user-specific token first
     if user_id:
         db = SessionLocal()
@@ -37,11 +37,11 @@ def send_telegram_message(
                 token = user_token.access_token
         finally:
             db.close()
-    
+
     # Fall back to environment variable if no token found
     if not token:
         token = os.getenv("TELEGRAM_BOT_TOKEN")
-    
+
     if not token:
         return {
             "status": "stub",

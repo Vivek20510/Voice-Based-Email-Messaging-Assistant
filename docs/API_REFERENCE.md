@@ -84,6 +84,11 @@ Clears session. Redirects to `/`.
 
 Requires authentication. Returns HTML page with voicemail dashboard and service status.
 
+### Compose Page
+**GET** `/compose`
+
+Requires authentication. Returns HTML compose page with voice dictation and service selection.
+
 ---
 
 ## Settings Routes

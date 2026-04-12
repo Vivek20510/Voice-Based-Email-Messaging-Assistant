@@ -32,11 +32,12 @@ Voice-Based-Email-Messaging-Assistant/
 │       ├── auth_routes.py          # Login, signup, OAuth, settings
 │       └── telegram_routes.py      # Telegram webhooks
 ├── templates/
-│   ├── base.html                   # Base layout
+│   ├── base.html                   # Base layout with navigation
 │   ├── login.html                  # Login page
 │   ├── signup.html                 # Signup page
-│   ├── dashboard.html              # Main voicemail dashboard
+│   ├── dashboard.html              # Voicemail dashboard with message view modal
 │   ├── settings.html               # Service settings
+│   ├── compose.html                # Compose page with voice dictation
 │   └── error.html                  # Error page
 ├── static/
 │   ├── css/
@@ -66,6 +67,32 @@ Voice-Based-Email-Messaging-Assistant/
 ```
 
 ---
+
+## Frontend Components
+
+### Dashboard (templates/dashboard.html)
+- Voicemail-style inbox with top navigation showing service status (Gmail/Telegram connected indicators)
+- Sidebar with inbox sections, channels (Emails/Telegram), and labels
+- Message list with cards showing sender, subject, preview, and time
+- Right panel with voice assistant chat area
+- Message view modal: Click email card to open modal with full content, reply form, and voice dictation for replies
+
+### Compose Page (templates/compose.html)
+- Service selector: Choose Gmail (email) or Telegram (chat ID)
+- Recipient field: Adapts based on service (email address or chat ID)
+- Subject field: Visible only for Gmail messages
+- Message textarea with character counter
+- Voice dictation section: Record button, stop button, transcription preview that appends to message
+- Send button: Submits to appropriate backend endpoint
+
+### Base Layout (templates/base.html)
+- Header navigation with brand, compose link (for authenticated users), settings, and logout
+- Consistent styling and responsive design
+
+### JavaScript Modules
+- `static/js/app.js`: Page initialization, event handlers, modal management
+- `static/js/api.js`: API client functions for all backend endpoints
+- `static/js/audio.js`: Web Audio API for voice recording and upload
 
 ## Database Schema
 

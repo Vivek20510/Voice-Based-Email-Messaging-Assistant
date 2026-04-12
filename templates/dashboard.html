@@ -495,6 +495,113 @@
   }
   .send-btn:hover { background: var(--blue-900); }
 
+  .email-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 45, 107, 0.32);
+    backdrop-filter: blur(1.5px);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    z-index: 98;
+    display: none;
+  }
+
+  .email-modal {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.96);
+    width: min(92vw, 650px);
+    max-height: 88vh;
+    overflow: hidden;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 26px 60px rgba(15, 45, 107, 0.18);
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 99;
+    display: none;
+  }
+
+  .email-modal.visible {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .email-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.8rem 1.8rem 0.9rem;
+    border-bottom: 1px solid #edf2f7;
+  }
+
+  .email-modal-channel {
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #5f7b9d;
+    margin-bottom: 0.65rem;
+  }
+
+  .email-modal-header h2 {
+    margin: 0;
+    font-size: 1.45rem;
+    color: #111d3f;
+    line-height: 1.2;
+  }
+
+  .email-modal-meta,
+  .email-modal-date {
+    color: #5f7b9d;
+    font-size: 0.95rem;
+  }
+
+  .email-modal-body {
+    max-height: 46vh;
+    overflow-y: auto;
+    padding: 1rem 1.8rem 1.5rem;
+  }
+
+  .email-modal-text {
+    color: #21335d;
+    line-height: 1.8;
+    white-space: pre-wrap;
+  }
+
+  .email-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.85rem;
+    padding: 0 1.8rem 1rem;
+  }
+
+  .email-reply-section {
+    padding: 0 1.8rem 1.6rem;
+    display: none;
+    gap: 1rem;
+  }
+
+  .email-modal-submit {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.65rem;
+  }
+
+  .email-modal-close {
+    border: none;
+    background: transparent;
+    color: #5f7b9d;
+    font-size: 1.35rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .email-modal-close:hover {
+    color: #1a4da8;
+  }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -531,7 +638,7 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-      <button class="compose-btn" onclick="openComposeModal()">+ Compose</button>
+      <button class="compose-btn" onclick="window.location.href='/compose'">+ Compose</button>
 
       <div class="sidebar-section">
         <div class="sidebar-label">Inbox</div>
@@ -678,13 +785,14 @@
     fetch('/email/list')
       .then(r => r.json())
       .then(data => {
-        if (data.error) {
-          list.innerHTML = `<div style="text-align:center;color:var(--text-light);padding:2rem;"><p>${data.error}</p></div>`;
+        const errorMessage = data.error || (data.status === 'error' ? data.message : '');
+        if (errorMessage) {
+          list.innerHTML = `<div style="text-align:center;color:var(--text-light);padding:2rem;"><p>${escHtml(errorMessage)}</p></div>`;
           document.getElementById('status-text').textContent = 'Error';
           return;
         }
 
-        let emails = data.emails || [];
+        let emails = data.emails || data.messages || [];
 
         /* Optional client-side filter by channel */
         if (filter === 'email') {
@@ -747,7 +855,23 @@
   }
 
   function openEmail(id) {
-    if (id) window.location.href = `/email/${id}`;
+    if (!id) return;
+
+    fetch(`/email/read/${encodeURIComponent(id)}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          showAlert('Unable to load message: ' + data.error, 'error');
+          return;
+        }
+
+        const email = data.message || data;
+        showEmailModal(email);
+      })
+      .catch(error => {
+        showAlert('Unable to load message', 'error');
+        console.error(error);
+      });
   }
 
   /* HTML escape helper */
@@ -759,7 +883,144 @@
       .replace(/"/g, '&quot;');
   }
 
+  function showEmailModal(email) {
+    const backdrop = document.getElementById('email-modal-backdrop');
+    const modal = document.getElementById('email-modal');
+    const subject = document.getElementById('email-modal-subject');
+    const from = document.getElementById('email-modal-from');
+    const to = document.getElementById('email-modal-to');
+    const date = document.getElementById('email-modal-date');
+    const body = document.getElementById('email-modal-body');
+    const replySection = document.getElementById('email-reply-section');
+    const replySubject = document.getElementById('reply-subject');
+    const replyTo = document.getElementById('reply-to');
+    const replyTextarea = document.getElementById('reply-text');
+
+    if (!modal || !backdrop) return;
+    subject.textContent = email.subject || 'No subject';
+    from.textContent = email.from || email.to || 'Unknown sender';
+    to.textContent = email.to || 'Unknown recipient';
+    date.textContent = email.date || '';
+    body.textContent = email.body || 'No message body available.';
+    replySubject.value = `Re: ${email.subject || ''}`;
+    replyTo.value = email.from || email.to || '';
+    replyTextarea.value = '';
+    replySection.style.display = 'none';
+    backdrop.style.display = 'block';
+    modal.style.display = 'block';
+    setTimeout(() => modal.classList.add('visible'), 10);
+  }
+
+  function closeEmailModal() {
+    const backdrop = document.getElementById('email-modal-backdrop');
+    const modal = document.getElementById('email-modal');
+    if (!modal || !backdrop) return;
+    modal.classList.remove('visible');
+    setTimeout(() => {
+      modal.style.display = 'none';
+      backdrop.style.display = 'none';
+    }, 180);
+  }
+
+  function openEmail(id) {
+    if (!id) return;
+
+    fetch(`/email/read/${encodeURIComponent(id)}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          showAlert('Unable to load message: ' + data.error, 'error');
+          return;
+        }
+
+        const email = data.message || data;
+        showEmailModal(email);
+      })
+      .catch(error => {
+        showAlert('Unable to load message', 'error');
+        console.error(error);
+      });
+  }
+
+  function toggleReplyField() {
+    const replySection = document.getElementById('email-reply-section');
+    if (!replySection) return;
+    replySection.style.display = replySection.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function sendReply() {
+    const replyTo = document.getElementById('reply-to').value;
+    const replySubject = document.getElementById('reply-subject').value;
+    const replyText = document.getElementById('reply-text').value.trim();
+    if (!replyText) {
+      showAlert('Enter a reply message first.', 'error');
+      return;
+    }
+
+    fetch('/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: replyTo, subject: replySubject, body: replyText }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'sent' || data.status === 'ok') {
+          showAlert('Reply sent successfully!', 'success');
+          closeEmailModal();
+          loadEmails();
+        } else {
+          showAlert(data.error || 'Unable to send reply.', 'error');
+        }
+      })
+      .catch(error => {
+        showAlert('Error sending reply', 'error');
+        console.error(error);
+      });
+  }
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeEmailModal();
+    }
+  });
+
   /* Load on page ready */
   document.addEventListener('DOMContentLoaded', () => loadEmails());
 </script>
+
+<div id="email-modal-backdrop" class="email-modal-backdrop" onclick="closeEmailModal()"></div>
+<div id="email-modal" class="email-modal" style="display:none;">
+  <div class="email-modal-header">
+    <div>
+      <div class="email-modal-channel">Message Preview</div>
+      <h2 id="email-modal-subject">Subject</h2>
+      <div class="email-modal-meta"><span id="email-modal-from"></span> → <span id="email-modal-to"></span></div>
+      <div class="email-modal-date" id="email-modal-date"></div>
+    </div>
+    <button class="email-modal-close" onclick="closeEmailModal()">✕</button>
+  </div>
+  <div class="email-modal-body">
+    <div id="email-modal-body" class="email-modal-text"></div>
+  </div>
+  <div class="email-modal-actions">
+    <button class="btn btn-secondary" type="button" onclick="toggleReplyField()">Reply</button>
+  </div>
+  <div id="email-reply-section" class="email-reply-section" style="display:none;">
+    <div class="form-group">
+      <label for="reply-subject">Subject</label>
+      <input id="reply-subject" type="text" />
+    </div>
+    <div class="form-group" style="display:none;">
+      <label for="reply-to">To</label>
+      <input id="reply-to" type="text" readonly />
+    </div>
+    <div class="form-group">
+      <label for="reply-text">Reply message</label>
+      <textarea id="reply-text"></textarea>
+    </div>
+    <div class="email-modal-submit">
+      <button class="btn btn-primary" type="button" onclick="sendReply()">Send reply</button>
+    </div>
+  </div>
+</div>
 {% endblock %}

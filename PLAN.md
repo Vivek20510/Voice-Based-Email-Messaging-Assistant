@@ -3,7 +3,7 @@
 ## Overview
 Open-source voice assistant for email and messaging with a Python/Flask backend and an HTML/CSS/JS frontend. Uses Whisper for transcription, pyttsx3/gTTS for TTS, HuggingFace transformers for NLP, Gmail OAuth for email, and Telegram Bot API for messaging. Deployable to free cloud tiers like Railway or Render.
 
-**Current Status:** Phase 1-2 complete ✅
+**Current Status:** Phase 3.6 complete ✅, Phase 3.6.2 (frontend improvements) in progress 🔄
 
 ---
 
@@ -52,145 +52,71 @@ A capable backend API with stubbed integrations and automated test validation.
 
 ---
 
-## Phase 3: Real Integrations + Multi-Language + Frontend 🔄 IN PROGRESS
+## Phase 3: Real Integrations + Multi-Language + Frontend ✅ COMPLETE
 
-### Phase 3.1: Gmail OAuth Integration (Backend)
-
-#### Objectives
-- Implement Gmail OAuth 2.0 login flow
-- Store Gmail tokens in the database
-- Enable real Gmail send/read operations through the API
-
-#### User Setup Tasks
-1. Create a Google Cloud project.
-2. Enable Gmail API.
-3. Create OAuth 2.0 credentials for a Web application.
-4. Add redirect URI for local development:
-   - `http://localhost:5000/auth/google/callback`
-5. Download credentials JSON and save as `.secrets/client_secret_2_370325942201-lrhpk5nuofeqau9afflke2n7huqp7fqq.apps.googleusercontent.com.json`.
-6. Set environment variables in `.env`:
-   - `GMAIL_API_ENABLED=true`
-   - `GOOGLE_OAUTH_CREDENTIALS_PATH=.secrets/client_secret_2_370325942201-lrhpk5nuofeqau9afflke2n7huqp7fqq.apps.googleusercontent.com.json`
-   - `GOOGLE_OAUTH_REDIRECT_URI=http://localhost:5000/auth/google/callback`
-
-#### Backend Tasks
-- Create `src/services/gmail_service.py`
-- Create `src/web/auth_routes.py`
-- Create `templates/login.html`, `templates/base.html` and a placeholder `templates/dashboard.html`
-- Add session support in `src/app.py`
-- Update `src/services/auth.py` with token management helpers
-- Add OAuth credentials path to `.gitignore`
-- Update `requirements.txt`
-
-#### Test Coverage
-- `test/test_gmail_service.py`
-- `test/test_auth_routes.py`
-
----
-
-### Phase 3.2: Telegram Webhook + Conversational Commands
+### Phase 3.1-3.5: Gmail OAuth, Telegram, Multi-Language, Frontend, Testing ✅ COMPLETE
 
 #### Objectives
-- Add Telegram webhook support
-- Process incoming messages and commands
-- Maintain conversation state for multi-turn interactions
+- Implement Gmail OAuth 2.0 login flow with database token storage
+- Add Telegram webhook and messaging support
+- Enable multi-language voice transcription and TTS
+- Build vanilla HTML/CSS/JS frontend with login, dashboard, settings
+- Add comprehensive testing with CI coverage
 
-#### User Setup Tasks
-1. Create a Telegram bot with BotFather.
-2. Save the token to `.env`: `TELEGRAM_BOT_TOKEN=<token>`.
-3. Configure webhook for production once deployed.
+#### Deliverables
+- `src/services/gmail_service.py`, `src/web/auth_routes.py`
+- `src/web/telegram_routes.py`, `src/services/telegram_service.py`
+- Enhanced `src/services/voice.py` with language detection
+- Frontend templates: `base.html`, `login.html`, `signup.html`, `dashboard.html`, `settings.html`
+- Static assets: `static/css/style.css`, `static/js/app.js`, `static/js/api.js`, `static/js/audio.js`
+- Test files: `test/test_auth_phase3_6.py`, `test/test_messaging_service_user_tokens.py`
+- Documentation: `docs/SETUP_GUIDE.md`, `docs/ARCHITECTURE.md`, `docs/API_REFERENCE.md`, `docs/DEPLOYMENT.md`
 
-#### Backend Tasks
-- Create `src/web/telegram_routes.py`
-- Create `src/services/telegram_service.py`
-- Add `Conversation` model to `src/models.py`
-- Implement command handlers for `/start`, `/help`, `/email`, `/summarize`, `/reply`
-- Add Telegram webhook route to `src/app.py`
+#### Outcome
+Fully functional backend with real Gmail and Telegram integrations, multi-language voice support, and a basic frontend with authentication and settings.
 
-#### Tests
-- `test/test_telegram_routes.py`
-- `test/test_telegram_service.py`
-
----
-
-### Phase 3.3: Multi-Language Voice Support
+### Phase 3.6: SQLite Auth, Settings-Driven Services, Voicemail Dashboard ✅ COMPLETE
 
 #### Objectives
-- Detect voice/text language automatically
-- Speak text in the appropriate language
-- Propagate language through NLP responses
+- Implement SQLite-backed authentication with email/password and OAuth
+- Add settings page for Gmail and Telegram service connections
+- Create voicemail-style dashboard with service status indicators
+- Enable user-specific token storage for services
 
-#### Backend Tasks
-- Add `langdetect` to `requirements.txt`
-- Add `gTTS` to `requirements.txt`
-- Extend `src/services/voice.py` for language detection
-- Extend `src/services/nlp_service.py` with language-aware calls
-- Update API responses with language metadata
+#### Deliverables
+- Enhanced `src/web/auth_routes.py` with login/signup/OAuth/settings routes
+- `src/models.py` with User and UserToken models
+- Updated `src/services/messaging_service.py` for user-token lookup
+- Voicemail dashboard template with service status display
+- Settings page with Gmail OAuth and Telegram token entry
 
-#### Tests
-- `test/test_voice_multilang.py`
+#### Outcome
+Complete authentication system with persistent service connections and a functional voicemail-style inbox dashboard.
 
----
-
-### Phase 3.4: HTML/CSS/JS Frontend
-
-#### Objectives
-- Build a lightweight vanilla frontend
-- Support login, voice upload, inbox view, compose, and Telegram help
-- Use Web Audio API for browser voice capture
-
-#### Frontend Structure
-- `templates/base.html`
-- `templates/index.html`
-- `templates/login.html`
-- `templates/dashboard.html`
-- `templates/error.html`
-- `static/css/style.css`
-- `static/js/app.js`
-- `static/js/audio.js`
-- `static/js/api.js`
-
-#### Tasks
-- Render login and dashboard pages from Flask
-- Implement voice recording and upload
-- Implement email compose form and inbox listing
-- Add settings and session checks
-
----
-
-### Phase 3.5: Comprehensive Testing
+### Phase 3.6.2: Frontend Prototype Matching 🔄 IN PROGRESS
 
 #### Objectives
-- Full unit and integration coverage
-- Mock external APIs: Gmail, Telegram, HuggingFace
-- Enforce coverage in CI
+- Enhance frontend to fully match voicemail prototype features
+- Add compose page with voice dictation and service selection
+- Implement message view modal with reply functionality
+- Improve dashboard interactions and UI polish
 
-#### Test Files
-- `test/test_gmail_service.py`
-- `test/test_auth_routes.py`
-- `test/test_telegram_routes.py`
-- `test/test_telegram_service.py`
-- `test/test_voice_multilang.py`
-- `test/test_frontend_rendering.py`
+#### Deliverables
+- `templates/compose.html` with voice dictation and service selection
+- Enhanced `templates/dashboard.html` with message view modal
+- Updated `static/js/app.js` for modal and compose interactions
+- Header navigation updates in `templates/base.html`
 
-#### CI
-- Update `.github/workflows/python-app.yml`
-- Add coverage and threshold
+#### Known Issues
+- Test suite has fixture conflicts (shared DB across tests); handle as separate task
+- Frontend improvements needed to match full prototype (documented but not implemented yet)
 
----
-
-### Phase 3.6: Documentation
-
-#### Files
-- `docs/SETUP_GUIDE.md`
-- `docs/ARCHITECTURE.md`
-- `docs/API_REFERENCE.md`
-- `docs/DEPLOYMENT.md`
-- Update `README.md`
+#### Outcome
+Frontend fully matches prototype with compose, message view, and voice features.
 
 ---
 
-## Phase 4: Deployment & DevOps
+## Phase 4: Deployment & DevOps 🔄 NEXT
 
 ### Phase 4.1: Containerization
 - Create `Dockerfile`
@@ -244,16 +170,16 @@ LOG_LEVEL=INFO
 ---
 
 ## Notes
-- Phase 1-2 completed.
-- Phase 3 begins with Gmail OAuth.
-- Frontend is vanilla HTML/CSS/JS.
-- Deployment target: free cloud.
+- Phase 1-3.6 completed.
+- Phase 3.6.2 (frontend improvements) in progress to match prototype.
+- Test suite has fixture conflicts (shared DB); handle separately.
+- Frontend enhancements documented but not implemented yet.
+- Phase 4 begins with containerization and deployment.
 
 ---
 
 ## Next Steps
-1. Implement Gmail OAuth backend.
-2. Add Telegram webhook support.
-3. Add multi-language voice.
-4. Build frontend.
-5. Add full tests and deploy.
+1. Complete Phase 3.6.2: Enhance frontend to match full prototype features.
+2. Fix test fixture conflicts for reliable CI.
+3. Begin Phase 4: Containerize and deploy to Railway/Render.
+4. Add monitoring and production optimizations.

@@ -2,7 +2,7 @@ import os
 import json
 import base64
 from email.mime.text import MIMEText
-from datetime import datetime
+from datetime import datetime, timezone
 
 import requests
 from google.oauth2.credentials import Credentials
@@ -160,6 +160,72 @@ def fetch_message_ids(user_token, user_id, register_token_fn, max_results: int =
     return results.get("messages", [])
 
 
+def _header_value(headers, header_name: str):
+    return next(
+        (
+            header.get("value")
+            for header in headers
+            if header.get("name", "").lower() == header_name.lower()
+        ),
+        "",
+    )
+
+
+def _internal_date_to_iso(internal_date: str | None):
+    if not internal_date:
+        return None
+    try:
+        return (
+            datetime.fromtimestamp(int(internal_date) / 1000, tz=timezone.utc)
+            .isoformat()
+            .replace("+00:00", "Z")
+        )
+    except (TypeError, ValueError):
+        return None
+
+
+def fetch_message_summaries(
+    user_token, user_id, register_token_fn, max_results: int = 10
+):
+    gmail_service, _ = build_gmail_service(user_token, user_id, register_token_fn)
+    results = (
+        gmail_service.users()
+        .messages()
+        .list(userId="me", maxResults=max_results)
+        .execute()
+    )
+    summaries = []
+    for message_ref in results.get("messages", []):
+        message = (
+            gmail_service.users()
+            .messages()
+            .get(
+                userId="me",
+                id=message_ref.get("id"),
+                format="metadata",
+                metadataHeaders=["From", "To", "Subject", "Date"],
+            )
+            .execute()
+        )
+        headers = message.get("payload", {}).get("headers", [])
+        summaries.append(
+            {
+                "id": message.get("id"),
+                "gmail_id": message.get("id"),
+                "thread_id": message.get("threadId"),
+                "from": _header_value(headers, "From"),
+                "to": _header_value(headers, "To"),
+                "subject": _header_value(headers, "Subject") or "(No subject)",
+                "preview": message.get("snippet", ""),
+                "snippet": message.get("snippet", ""),
+                "date": _internal_date_to_iso(message.get("internalDate")),
+                "read": "UNREAD" not in message.get("labelIds", []),
+                "channel": "email",
+            }
+        )
+    return summaries
+
+
 def fetch_message(user_token, user_id, register_token_fn, message_id: str):
     gmail_service, _ = build_gmail_service(user_token, user_id, register_token_fn)
     message = (
@@ -182,13 +248,19 @@ def fetch_message(user_token, user_id, register_token_fn, message_id: str):
                     "utf-8", errors="ignore"
                 )
                 break
+    if not body and payload.get("body", {}).get("data"):
+        body = base64.urlsafe_b64decode(payload["body"]["data"].encode()).decode(
+            "utf-8", errors="ignore"
+        )
     return {
         "id": message.get("id"),
         "snippet": snippet,
-        "subject": next(
-            (h.get("value") for h in headers if h.get("name") == "Subject"), ""
-        ),
-        "from": next((h.get("value") for h in headers if h.get("name") == "From"), ""),
+        "subject": _header_value(headers, "Subject") or "(No subject)",
+        "from": _header_value(headers, "From"),
+        "to": _header_value(headers, "To"),
+        "date": _internal_date_to_iso(message.get("internalDate")),
+        "read": "UNREAD" not in message.get("labelIds", []),
+        "channel": "email",
         "body": body,
     }
 
